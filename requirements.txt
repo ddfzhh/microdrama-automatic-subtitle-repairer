@@ -1,0 +1,10 @@
+# Python 3.10–3.13 required (whisperx does not support 3.14 yet).
+# Setup:  python3.13 -m venv .venv && .venv/bin/pip install -r <this file>
+# ffmpeg must be on PATH for audio extraction. Subtitle burn-in needs an
+# ffmpeg with libass — system builds often lack it, so use the bundled
+# `.venv/bin/static_ffmpeg` for burning previews.
+# GPU: align.py auto-detects NVIDIA CUDA > Apple MPS > CPU. On Windows/Linux
+# with an NVIDIA card, install the CUDA build of torch FIRST or CUDA won't be
+# detected:  pip install torch --index-url https://download.pytorch.org/whl/cu124
+whisperx
+static-ffmpeg
