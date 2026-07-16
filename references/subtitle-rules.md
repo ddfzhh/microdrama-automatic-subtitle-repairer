@@ -10,11 +10,22 @@ paraphrase, or reorder words — not even to satisfy a timing rule. When
 verbatim text and a timing rule conflict (fast dialogue), the text wins and
 the cue is flagged in the QC report.
 
+## What lives where
+
+The SRT file carries only text, line breaks, and timecodes — no styling.
+Character-per-line limits are enforced by where the line breaks are placed
+in the SRT; how large the text renders is the renderer's decision (the
+platform app, or our burn-in style below). The limits and the text size are
+calibrated together: 25 chars × 2 lines at ~3.75%-height type fills the
+9:16 phone safe area without touching the UI columns.
+
 ## Hard rules (QC must pass with zero violations)
 
-- 1 line per cue — no line breaks in cue text
-- ≤ 7 words per cue
-- ≤ 34 characters per cue (including spaces)
+- ≤ 2 lines per cue; 1 line preferred — use the 2nd line only when one
+  line cannot hold the semantic unit
+- ≤ 25 characters per line (including spaces)
+- The internal line break of a 2-line cue falls at a grammar boundary
+  (same never-break list as cue breaks); prefer the top line shorter
 - Duration: 0.833 s min, 5 s max
 - Gap between cues: ≥ 2 frames (≥ 83 ms @ 24 fps, ≥ 67 ms @ 30 fps)
 - No overlapping cues; strictly chronological
@@ -25,7 +36,8 @@ speech on both sides.
 
 ## Targets
 
-- 3–6 words per cue typical; 7 is the cap, not the norm
+- 3–6 words per line typical; a 2-line cue is still ONE thought, never two
+  thoughts stacked to save a cue
 - Reading speed ≤ 17 CPS (target 15). This is a target, not a hard rule:
   the text is verbatim, so when the actors speak faster than 17 CPS the cue
   simply flags over-speed in the QC report — never fix it by cutting words.
@@ -92,9 +104,18 @@ into their own cue is what delays them on screen until they are spoken.
 
 ## Rendering (previews/delivery)
 
-Bottom-center, baseline ~15–20% up from bottom edge. White text, thin dark
-outline, no box.
+**Text size: ~3.75% of video height** (BBC subtitle guidance for 9:16
+video; 2% is too small to read on a phone, 8% is the error ceiling).
+That is 72 px on 1080×1920, 48 px on 720×1280. At this size ~25
+characters span the phone safe column (center ~83% of frame width, clear
+of the right-side button stack).
 
-ffmpeg burn-in style (FontSize 10 is calibrated so a 34-char cue fits one
-line on a 720-wide 9:16 frame — larger sizes wrap and break the 1-line rule):
-`force_style='FontName=Arial,FontSize=10,Bold=1,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=1,Shadow=0,MarginV=55,Alignment=2'`
+Position: bottom-center, baseline ~15–20% up from the bottom edge (clear
+of the progress bar / caption dead zone). White text, thin dark outline,
+no box.
+
+ffmpeg burn-in style (libass FontSize is relative to PlayResY=288, so 11
+≈ 3.75% of height at any resolution; MarginV leaves room for 2 lines):
+`force_style='FontName=Arial,FontSize=11,Bold=1,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=1,Shadow=0,MarginV=50,Alignment=2'`
+After burning, frame-check a maximum-length 2-line cue: each line must
+render unwrapped and inside the safe column.

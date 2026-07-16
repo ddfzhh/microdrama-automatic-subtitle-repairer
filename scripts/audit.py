@@ -2,7 +2,7 @@
 """QC audit for vertical microdrama SRTs. Usage: audit.py file.srt [...] [--fps 30]"""
 import re, sys, json
 
-MIN_DUR, MAX_DUR, MAX_CPS, MAX_CHARS, MAX_WORDS = 0.833, 5.0, 17.0, 34, 7
+MIN_DUR, MAX_DUR, MAX_CPS, MAX_LINE_CHARS, MAX_LINES = 0.833, 5.0, 17.0, 25, 2
 
 def parse_srt(path):
     txt = open(path, encoding='utf-8-sig').read()
@@ -28,10 +28,10 @@ def audit(path, fps=30):
     for i, c in enumerate(cues, 1):
         d = c['end'] - c['start']
         n = len(c['text'].replace('\n', ' '))
-        w = len(c['text'].split())
-        if '\n' in c['text']: v.append((i, 'multiline', c['text']))
-        if w > MAX_WORDS: v.append((i, f'words={w}', c['text']))
-        if n > MAX_CHARS: v.append((i, f'chars={n}', c['text']))
+        lines = c['text'].split('\n')
+        if len(lines) > MAX_LINES: v.append((i, f'lines={len(lines)}', c['text']))
+        for ln in lines:
+            if len(ln) > MAX_LINE_CHARS: v.append((i, f'line chars={len(ln)}', ln))
         # interruption stubs ("I—") bounded by speech on both sides are exempt
         # from min duration
         if d < MIN_DUR and not c['text'].rstrip().endswith(('—', '-', '…')):

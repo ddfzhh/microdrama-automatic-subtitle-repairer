@@ -77,8 +77,9 @@ an ordered list of cues, each an object:
 - `words`: inclusive index range into `words.json`. Every word used exactly
   once, in order.
 - `text`: the repaired cue — the same words with punctuation, casing, and
-  spelling fixed. List any spelling-fixed indices in `"edited": [i, ...]`
-  and log each fix to `changes_EPxx.md`.
+  spelling fixed. May contain one `\n` for a 2-line cue (see the rules file
+  for line limits and break placement). List any spelling-fixed indices in
+  `"edited": [i, ...]` and log each fix to `changes_EPxx.md`.
 - `no_extend` (optional): set when a silent reaction follows the cue, so
   the timer won't stretch it over the reaction.
 - Never write timestamps. Group words by the semantic rules first, grammar

@@ -6,7 +6,9 @@ Usage: validate_time.py words.json plan.json out.srt [--fps 30] [--flags flags.t
 words.json  — from align.py.
 plan.json   — from the agent (Stage 2), a list of cues in order:
   {"words": [first, last],   inclusive index range into words.json
-   "text": "What?! No way.", repaired text: verbatim words + punctuation/casing
+   "text": "What?! No way.", repaired text: verbatim words + punctuation/casing;
+                             may contain ONE "\n" (2-line cue, break at a
+                             grammar boundary, top line shorter)
    "no_extend": true,        optional: reaction shot follows, don't linger
    "edited": [41]}           optional: indices whose spelling was deliberately fixed
 
@@ -18,7 +20,7 @@ Exit 2: plan rejected — one error per line, addressed by cue number.
 import json, re, sys
 
 MIN_DUR, MAX_DUR, MAX_CPS = 0.833, 5.0, 17.0
-MAX_CHARS, MAX_WORDS = 34, 7
+MAX_LINE_CHARS, MAX_LINES = 25, 2
 LEAD, TAIL = 0.12, 0.5
 LATE_SLIP = 0.15   # a starving cue may run this far into the next cue's speech
 
@@ -43,12 +45,12 @@ def validate(plan, words):
             if norm(tok) != norm(words[i]['word']) and i not in cue.get('edited', []):
                 errors.append(f"cue {c}: word {i} '{words[i]['word']}' rewritten as "
                               f"'{tok}' (verbatim rule; use \"edited\" if intentional)")
-        if '\n' in cue['text']:
-            errors.append(f"cue {c}: line break (1 line per cue)")
-        if len(cue['text']) > MAX_CHARS:
-            errors.append(f"cue {c}: {len(cue['text'])} chars > {MAX_CHARS}")
-        if len(toks) > MAX_WORDS:
-            errors.append(f"cue {c}: {len(toks)} words > {MAX_WORDS}")
+        lines = cue['text'].split('\n')
+        if len(lines) > MAX_LINES:
+            errors.append(f"cue {c}: {len(lines)} lines > {MAX_LINES}")
+        for ln in lines:
+            if len(ln) > MAX_LINE_CHARS:
+                errors.append(f"cue {c}: line '{ln}' is {len(ln)} chars > {MAX_LINE_CHARS}")
     if expect != len(words):
         errors.append(f"plan ends at word {expect-1}, words.json has {len(words)} words")
     return errors
@@ -85,15 +87,16 @@ def main():
         nxt_ws = words[plan[i+1]['words'][0]]['start'] if i + 1 < len(plan) else 1e9
         polite, hard = nxt_ws - LEAD - gap, nxt_ws - gap
         end = min(we + TAIL, start + MAX_DUR, polite)
-        need = max(MIN_DUR, len(cue['text']) / (MAX_CPS - 0.5))
+        nchars = len(cue['text'].replace('\n', ' '))
+        need = max(MIN_DUR, nchars / (MAX_CPS - 0.5))
         if not cue.get('no_extend') and end - start < need:
             end = min(start + need, start + MAX_DUR, hard)
         if end - start < MIN_DUR:   # last resort, even for no_extend
             end = min(start + MIN_DUR, hard + LATE_SLIP)
         if end - start < MIN_DUR - 1e-6:
             flags.append(f"SHORT {end-start:.2f}s (crowded): {cue['text']}")
-        if len(cue['text']) / (end - start) > MAX_CPS + 0.01:
-            flags.append(f"CPS {len(cue['text'])/(end-start):.1f} (fast speech): {cue['text']}")
+        if nchars / (end - start) > MAX_CPS + 0.01:
+            flags.append(f"CPS {nchars/(end-start):.1f} (fast speech): {cue['text']}")
         out.append({'start': start, 'end': end, 'text': cue['text']})
 
     with open(out_path, 'w', encoding='utf-8') as f:
