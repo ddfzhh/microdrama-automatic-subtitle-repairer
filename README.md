@@ -1,4 +1,4 @@
-# microdrama-subtitle-repair
+# microdrama-automatic-subtitle-repairer
 
 A [Claude Code skill](https://docs.claude.com/en/docs/claude-code/skills)
 that repairs machine-generated subtitles for vertical microdramas
