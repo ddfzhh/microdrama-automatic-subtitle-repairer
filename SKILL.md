@@ -133,6 +133,13 @@ frame gaps).
    - **SHORT (crowded)**: acceptable only when boxed in by speech on both
      sides; list in the QC report.
    - **CPS (fast speech)**: list in the QC report, no action.
+
+   Verification ASR: `small.en` is enough — you are diffing words and
+   reading onsets, not transcribing for delivery. If a flagged span's cue
+   timing is contradicted by measured ASR word times, you may patch those
+   words' timestamps in `words.json` — ONLY with measured ASR values (never
+   invented ones), only at flagged spans, logged in the QC report — then
+   rerun Stage 3 so the script recomputes all cue timing.
 3. Burn a preview. Frame-check the longest cue for line wrap, AND
    sync-check every flagged span by watching the preview clip around it —
    layout is verifiable from stills, sync is not (system ffmpeg often

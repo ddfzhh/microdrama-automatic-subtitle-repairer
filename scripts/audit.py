@@ -34,7 +34,7 @@ def audit(path, fps=30):
             if len(ln) > MAX_LINE_CHARS: v.append((i, f'line chars={len(ln)}', ln))
         # interruption stubs ("I—") bounded by speech on both sides are exempt
         # from min duration
-        if d < MIN_DUR and not c['text'].rstrip().endswith(('—', '-', '…')):
+        if d < MIN_DUR - 1e-3 and not c['text'].rstrip().endswith(('—', '-', '…')):
             v.append((i, f'dur={d:.2f}s<min', c['text']))
         if d > MAX_DUR: v.append((i, f'dur={d:.2f}s>max', c['text']))
         # reading speed is a soft target: the text is verbatim, so fast
