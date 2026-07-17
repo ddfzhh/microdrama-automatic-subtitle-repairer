@@ -48,9 +48,11 @@ preview, then batch the rest.
 ### Stage 0 — Baseline audit
 
 ```bash
-fps=$(ffprobe -v error -select_streams v -show_entries stream=r_frame_rate -of csv=p=0 video.mp4)  # e.g. 30/1
-.venv/bin/python S/audit.py original.srt --fps 30
+ffprobe -v error -select_streams v -show_entries stream=r_frame_rate -of csv=p=0 video.mp4  # e.g. 30/1
+.venv/bin/python S/audit.py original.srt --fps <measured fps>
 ```
+
+Use the measured fps in every `--fps` below (it sets the minimum gap).
 
 Record the violation count — Stage 4 must reduce it to zero.
 

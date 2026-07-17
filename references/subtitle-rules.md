@@ -45,15 +45,18 @@ speech on both sides.
   silence first.
 - Duration sweet spot: 1–3 s
 - Cue in-time: ≤ 120 ms before the first spoken word
-- Cue out-time: ≤ 500 ms after the last word; extend into silence to meet
-  min duration / CPS, never into the next cue
+- Cue out-time: ≤ 500 ms after the last word; extend into silence toward
+  the CPS target, but not into the next cue — with one exception: a cue
+  that cannot otherwise reach minimum duration may slip ≤ 150 ms into the
+  next cue's speech (the next cue then appears slightly late)
 
 ## Text
 
 - Full punctuation, sentence casing
 - Keep terminal periods
 - Keep spoken register: "gonna", "ya", curses, interjections stay
-- Numbers 1–10 as words, 11+ as digits
+- Numbers stay exactly as the SRT wrote them ("20" stays "20", "twenty"
+  stays "twenty") — converting formats would rewrite a word
 - Ellipsis only for genuine trailing off or interruption
 - No speaker labels, no SFX captions
 

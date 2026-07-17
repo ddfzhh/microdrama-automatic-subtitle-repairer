@@ -19,7 +19,8 @@ Exit 2: plan rejected — one error per line, addressed by cue number.
 """
 import json, re, sys
 
-MIN_DUR, MAX_DUR, MAX_CPS = 0.833, 5.0, 17.0
+MIN_DUR, MAX_DUR = 0.833, 5.0
+MAX_CPS, TARGET_CPS = 17.0, 15.0   # flag above MAX; extend cues toward TARGET
 MAX_LINE_CHARS, MAX_LINES = 25, 2
 LEAD, TAIL = 0.12, 0.5
 LATE_SLIP = 0.15   # a starving cue may run this far into the next cue's speech
@@ -88,7 +89,7 @@ def main():
         polite, hard = nxt_ws - LEAD - gap, nxt_ws - gap
         end = min(we + TAIL, start + MAX_DUR, polite)
         nchars = len(cue['text'].replace('\n', ' '))
-        need = max(MIN_DUR, nchars / (MAX_CPS - 0.5))
+        need = max(MIN_DUR, nchars / TARGET_CPS)
         if not cue.get('no_extend') and end - start < need:
             end = min(start + need, start + MAX_DUR, hard)
         if end - start < MIN_DUR:   # last resort, even for no_extend
