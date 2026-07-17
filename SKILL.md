@@ -36,8 +36,12 @@ Read `references/subtitle-rules.md` before Stage 2. It is the output spec.
 
 ```bash
 python3.13 -m venv .venv   # any Python 3.10–3.13; NOT 3.14+
-.venv/bin/pip install -r .claude/skills/microdrama-subtitle-repair/requirements.txt
+.venv/bin/pip install -r <this skill's directory>/requirements.txt
 ```
+
+(This skill may be installed project-local under `.claude/skills/` or
+globally under `~/.claude/skills/` — resolve its directory from where you
+read this file. The venv lives in the PROJECT being worked on.)
 
 ffmpeg must be on PATH. Run all scripts with `.venv/bin/python`.
 
