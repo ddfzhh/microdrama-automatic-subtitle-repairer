@@ -2,7 +2,7 @@
 """QC audit for vertical microdrama SRTs. Usage: audit.py file.srt [...] [--fps 30]"""
 import re, sys, json
 
-MIN_DUR, MAX_DUR, MAX_CPS, MAX_LINE_CHARS, MAX_LINES = 0.833, 5.0, 17.0, 25, 2
+MIN_DUR, MAX_DUR, MAX_CPS, MAX_LINE_CHARS, MAX_LINES = 0.833, 5.0, 17.0, 24, 2
 
 def parse_srt(path):
     txt = open(path, encoding='utf-8-sig').read()

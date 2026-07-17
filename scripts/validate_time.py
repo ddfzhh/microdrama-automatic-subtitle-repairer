@@ -21,7 +21,7 @@ import json, re, sys
 
 MIN_DUR, MAX_DUR = 0.833, 5.0
 MAX_CPS, TARGET_CPS = 17.0, 15.0   # flag above MAX; extend cues toward TARGET
-MAX_LINE_CHARS, MAX_LINES = 25, 2
+MAX_LINE_CHARS, MAX_LINES = 24, 2
 LEAD, TAIL = 0.12, 0.5
 LATE_SLIP = 0.15   # a starving cue may run this far into the next cue's speech
 

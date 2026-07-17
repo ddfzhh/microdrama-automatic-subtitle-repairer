@@ -16,14 +16,15 @@ The SRT file carries only text, line breaks, and timecodes — no styling.
 Character-per-line limits are enforced by where the line breaks are placed
 in the SRT; how large the text renders is the renderer's decision (the
 platform app, or our burn-in style below). The limits and the text size are
-calibrated together: 25 chars × 2 lines at ~3.75%-height type fills the
-9:16 phone safe area without touching the UI columns.
+calibrated together: 24 chars × 2 lines at 72 px type (1080×1920) fills
+the 780 px max subtitle width inside the 9:16 phone safe area. Full burn
+spec: `burn-style.md`.
 
 ## Hard rules (QC must pass with zero violations)
 
 - ≤ 2 lines per cue; 1 line preferred — use the 2nd line only when one
   line cannot hold the semantic unit
-- ≤ 25 characters per line (including spaces)
+- ≤ 24 characters per line (including spaces)
 - The internal line break of a 2-line cue falls at a grammar boundary
   (same never-break list as cue breaks); prefer the top line shorter
 - Duration: 0.833 s min, 5 s max

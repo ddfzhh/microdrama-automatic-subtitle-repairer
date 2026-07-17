@@ -97,7 +97,7 @@ an ordered list of cues, each an object:
 - `text`: the repaired cue — the same words with punctuation, casing, and
   spelling fixed. May contain one `\n` for a 2-line cue (see the rules file
   for line limits and break placement). List any spelling-fixed indices in
-  `"edited": [i, ...]` and log each fix to `changes_EPxx.md`.
+  `"edited": [i, ...]` and report each fix in your final reply.
 - `no_extend` (optional): set when a silent reaction follows the cue, so
   the timer won't stretch it over the reaction.
 - Never write timestamps. Group words by the semantic rules first, grammar
@@ -135,36 +135,28 @@ frame gaps).
      in the burned preview for early/late cues — a still frame cannot catch
      a sync error.
    - **SHORT (crowded)**: acceptable only when boxed in by speech on both
-     sides; list in the QC report.
-   - **CPS (fast speech)**: list in the QC report, no action.
+     sides; list in your final reply.
+   - **CPS (fast speech)**: list in your final reply, no action.
 
    Verification ASR: `small.en` is enough — you are diffing words and
    reading onsets, not transcribing for delivery. If a flagged span's cue
    timing is contradicted by measured ASR word times, you may patch those
    words' timestamps in `words.json` — ONLY with measured ASR values (never
-   invented ones), only at flagged spans, logged in the QC report — then
+   invented ones), only at flagged spans, reported in your final reply — then
    rerun Stage 3 so the script recomputes all cue timing.
-3. Burn a preview. Frame-check the longest cue for line wrap, AND
-   sync-check every flagged span by watching the preview clip around it —
-   layout is verifiable from stills, sync is not (system ffmpeg often
-   lacks libass — use the venv's `static_ffmpeg`; style is in the rules
-   file):
-   ```bash
-   .venv/bin/static_ffmpeg -y -i video.mp4 -vf "subtitles=out.srt:force_style='<style>'" -c:a copy preview.mp4
-   ```
-4. Deliver to a new output folder (never overwrite sources).
-   - **Always**: the repaired SRT.
-   - **Single-episode / pilot runs**: also a QC report (before/after
-     violation counts, accepted exceptions, flag resolutions) and a change
-     log for any word-level (spelling) edits.
-   - **Batch runs**: do NOT write per-episode reports. Append one line per
-     episode to a single `BATCH_REPORT.md` (episode | violations
-     before→after | rejection rounds | exceptions | escalations), plus a
-     consolidated "needs human review" section at the top listing ONLY
-     escalations (text/audio discrepancies, unverifiable spans, sync
-     doubts) with timestamps. Punctuation/casing fixes are never logged —
-     they are the job, not a change. The report exists for decisions only
-     the user can make; everything else is noise.
+3. Internal visual check (scratch only, NOT a deliverable): burn a quick
+   preview to your scratch dir with `static_ffmpeg` (system ffmpeg often
+   lacks libass), frame-check the longest cue for line wrap, and sync-check
+   every flagged span by watching the clip around it — layout is verifiable
+   from stills, sync is not.
+4. Deliver ONE file: the repaired SRT, to a new output folder (never
+   overwrite sources). No report files, no change logs, no preview files.
+   Everything the user must decide — text/audio discrepancies,
+   unverifiable spans, sync doubts, accepted exceptions — goes in your
+   final reply with timestamps, not into files.
+5. Only if the user explicitly asked for a burned ("with caption") video:
+   produce it per `references/burn-style.md` and deliver it alongside the
+   SRT.
 
 ## Failure modes
 
