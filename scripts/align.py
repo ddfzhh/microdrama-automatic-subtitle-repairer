@@ -110,14 +110,22 @@ def main():
         if words and mean_score < MIN_SCORE:
             # the anchor window may simply not contain the speech (source
             # SRTs can be systematically shifted, and a cue cannot align to
-            # audio its window excludes) — retry widened, keep the better fit
+            # audio its window excludes) — retry widened. A wider window also
+            # offers more WRONG audio to match (music scores "better" than
+            # nothing), so adopt only a result that (a) becomes genuinely
+            # confident, not merely less bad, and (b) stays after the
+            # previous cue's speech — never on faith.
             wide = {'start': max(0.0, cue['start'] - RETRY_PAD),
                     'end': cue['end'] + RETRY_PAD, 'text': cue['text']}
             words2, mean2 = align_once(wide)
-            if words2 and mean2 > mean_score:
+            prev_end = next((w['end'] for w in reversed(all_words)
+                             if w.get('end') is not None), 0.0)
+            if (words2 and mean2 >= MIN_SCORE and mean2 >= mean_score + 0.15
+                    and (words2[0].get('start') or 0) >= prev_end - 0.2):
                 shift = (words2[0].get('start') or cue['start']) - cue['start']
                 flags.append(f"RE-ANCHORED {shift:+.1f}s (widened window, score "
-                             f"{mean_score:.2f}->{mean2:.2f}): {cue['text']}")
+                             f"{mean_score:.2f}->{mean2:.2f}) — verify sync at "
+                             f"{cue['start']:.1f}s: {cue['text']}")
                 words, reanchored = words2, True
         if not words:
             flags.append(f"NO ALIGNMENT — anchor timing, verify "
