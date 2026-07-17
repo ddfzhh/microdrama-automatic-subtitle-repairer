@@ -148,9 +148,19 @@ frame gaps).
    ```bash
    .venv/bin/static_ffmpeg -y -i video.mp4 -vf "subtitles=out.srt:force_style='<style>'" -c:a copy preview.mp4
    ```
-4. Deliver to a new output folder (never overwrite sources): the SRT, the
-   change log, and a QC report (before/after violation counts, accepted
-   exceptions, flag resolutions).
+4. Deliver to a new output folder (never overwrite sources).
+   - **Always**: the repaired SRT.
+   - **Single-episode / pilot runs**: also a QC report (before/after
+     violation counts, accepted exceptions, flag resolutions) and a change
+     log for any word-level (spelling) edits.
+   - **Batch runs**: do NOT write per-episode reports. Append one line per
+     episode to a single `BATCH_REPORT.md` (episode | violations
+     before→after | rejection rounds | exceptions | escalations), plus a
+     consolidated "needs human review" section at the top listing ONLY
+     escalations (text/audio discrepancies, unverifiable spans, sync
+     doubts) with timestamps. Punctuation/casing fixes are never logged —
+     they are the job, not a change. The report exists for decisions only
+     the user can make; everything else is noise.
 
 ## Failure modes
 
