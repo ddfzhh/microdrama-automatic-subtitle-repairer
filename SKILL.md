@@ -41,6 +41,12 @@ python3.13 -m venv .venv   # any Python 3.10–3.13; NOT 3.14+
 
 ffmpeg must be on PATH. Run all scripts with `.venv/bin/python`.
 
+This runs on the user's personal machine — keep it responsive. Prefix
+long CPU-bound commands (ASR verification passes, preview burns) with
+`nice -n 15`, give ffmpeg burns `-threads 4`, and cap CPU inference
+threads (`OMP_NUM_THREADS=4`, faster-whisper `cpu_threads=4`). GPU
+alignment needs no cap. Slightly slower is fine; a frozen machine is not.
+
 Windows: the venv executables live at `.venv\Scripts\python` and
 `.venv\Scripts\static_ffmpeg` (not `bin/`); install ffmpeg with
 `winget install ffmpeg`; run the burn command from `cmd` or wrap the

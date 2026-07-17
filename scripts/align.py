@@ -19,6 +19,10 @@ instead, and the span is flagged for Stage 4 verification.
 import json, re, sys
 
 MIN_SCORE, MAX_DRIFT = 0.5, 2.0
+RETRY_PAD = 3.0   # low-confidence cues retry with the anchor window widened
+                  # by this many seconds each side — source SRTs can be
+                  # systematically shifted, and a cue can't align to audio
+                  # its window doesn't contain
 
 
 def parse_srt(path):
@@ -83,19 +87,38 @@ def main():
         device = 'cpu'   # accelerator lacks an op or memory — CPU always works
         model_a, meta = whisperx.load_align_model(language_code='en', device=device)
 
-    all_words, flags = [], []
-    for cue in cues:
+    def align_once(seg):
+        nonlocal device, model_a, meta
         try:
-            res = whisperx.align([cue], model_a, meta, audio, device,
+            res = whisperx.align([seg], model_a, meta, audio, device,
                                  return_char_alignments=False)
         except Exception:
             if device == 'cpu':
                 raise
             device = 'cpu'
             model_a, meta = whisperx.load_align_model(language_code='en', device=device)
-            res = whisperx.align([cue], model_a, meta, audio, device,
+            res = whisperx.align([seg], model_a, meta, audio, device,
                                  return_char_alignments=False)
         words = [w for s in res['segments'] for w in s['words']]
+        scores = [w['score'] for w in words if w.get('score') is not None]
+        return words, (sum(scores) / len(scores) if scores else 0.0)
+
+    all_words, flags = [], []
+    for cue in cues:
+        reanchored = False
+        words, mean_score = align_once(cue)
+        if words and mean_score < MIN_SCORE:
+            # the anchor window may simply not contain the speech (source
+            # SRTs can be systematically shifted, and a cue cannot align to
+            # audio its window excludes) — retry widened, keep the better fit
+            wide = {'start': max(0.0, cue['start'] - RETRY_PAD),
+                    'end': cue['end'] + RETRY_PAD, 'text': cue['text']}
+            words2, mean2 = align_once(wide)
+            if words2 and mean2 > mean_score:
+                shift = (words2[0].get('start') or cue['start']) - cue['start']
+                flags.append(f"RE-ANCHORED {shift:+.1f}s (widened window, score "
+                             f"{mean_score:.2f}->{mean2:.2f}): {cue['text']}")
+                words, reanchored = words2, True
         if not words:
             flags.append(f"NO ALIGNMENT — anchor timing, verify "
                          f"{cue['start']:.1f}-{cue['end']:.1f}s: {cue['text']}")
@@ -108,7 +131,7 @@ def main():
         # (music/SFX under dialogue) do NOT discard: wav2vec2 timing degrades
         # gracefully under noise, while the anchor timing is the known-bad
         # input this pipeline exists to fix.
-        if drift > MAX_DRIFT or not monotonic:
+        if (drift > MAX_DRIFT and not reanchored) or not monotonic:
             reason = f"DRIFT {drift:.1f}s" if drift > MAX_DRIFT else "NON-MONOTONIC"
             flags.append(f"{reason} — alignment discarded, anchor timing, verify "
                          f"{cue['start']:.1f}-{cue['end']:.1f}s: {cue['text']}")
