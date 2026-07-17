@@ -111,16 +111,27 @@ frame gaps).
    interruption stubs "I—" and flagged crowded cues; speed warnings are
    report-only because text is verbatim).
 2. Act on each line of `flags.txt`:
-   - **LOW CONFIDENCE / DRIFT / NO ALIGNMENT**: transcribe that time span
-     with plain ASR and diff against the SRT text. Audio differs → report
-     the discrepancy to the user; never rewrite the words. Matches → the
-     anchor timing is fine; recheck the span in the preview.
+   - **LOW CONFIDENCE (alignment kept)**: transcribe that span with plain
+     ASR using word timestamps and diff against the SRT text. Text differs
+     → report the discrepancy to the user; never rewrite the words. Text
+     matches → the alignment's timing is trustworthy (the low score was
+     music/noise, and a matching transcript means the aligner had the right
+     words); as a cross-check, compare the ASR's word times (clip offset +
+     word time) against the cue times — if they disagree by > ~300 ms,
+     report the span to the user.
+   - **DRIFT / NON-MONOTONIC / NO ALIGNMENT (anchor timing)**: these cues
+     inherited the ORIGINAL SRT timing, which may carry the source's sync
+     errors. Do the same ASR text-diff, and additionally watch these spans
+     in the burned preview for early/late cues — a still frame cannot catch
+     a sync error.
    - **SHORT (crowded)**: acceptable only when boxed in by speech on both
      sides; list in the QC report.
    - **CPS (fast speech)**: list in the QC report, no action.
-3. Burn a preview and frame-check the longest cue for line wrap (system
-   ffmpeg often lacks libass — use the venv's `static_ffmpeg`; style is in
-   the rules file):
+3. Burn a preview. Frame-check the longest cue for line wrap, AND
+   sync-check every flagged span by watching the preview clip around it —
+   layout is verifiable from stills, sync is not (system ffmpeg often
+   lacks libass — use the venv's `static_ffmpeg`; style is in the rules
+   file):
    ```bash
    .venv/bin/static_ffmpeg -y -i video.mp4 -vf "subtitles=out.srt:force_style='<style>'" -c:a copy preview.mp4
    ```

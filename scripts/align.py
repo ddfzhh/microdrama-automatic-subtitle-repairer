@@ -101,14 +101,23 @@ def main():
                          f"{cue['start']:.1f}-{cue['end']:.1f}s: {cue['text']}")
             words = [{'word': w} for w in cue['text'].split()]
         low = [w for w in words if (w.get('score') or 0) < MIN_SCORE]
-        drift = abs((words[0].get('start') or cue['start']) - cue['start'])
-        if len(low) > len(words) / 2 or drift > MAX_DRIFT:
-            reason = (f"LOW CONFIDENCE ({len(low)}/{len(words)} words <{MIN_SCORE})"
-                      if len(low) > len(words) / 2 else f"DRIFT {drift:.1f}s")
-            flags.append(f"{reason} — anchor timing, verify "
+        timed = [w for w in words if w.get('start') is not None]
+        drift = abs((timed[0]['start'] if timed else cue['start']) - cue['start'])
+        monotonic = all(a['start'] <= b['start'] for a, b in zip(timed, timed[1:]))
+        # Discard alignment ONLY when it is implausible. Low scores alone
+        # (music/SFX under dialogue) do NOT discard: wav2vec2 timing degrades
+        # gracefully under noise, while the anchor timing is the known-bad
+        # input this pipeline exists to fix.
+        if drift > MAX_DRIFT or not monotonic:
+            reason = f"DRIFT {drift:.1f}s" if drift > MAX_DRIFT else "NON-MONOTONIC"
+            flags.append(f"{reason} — alignment discarded, anchor timing, verify "
                          f"{cue['start']:.1f}-{cue['end']:.1f}s: {cue['text']}")
             for w in words:
                 w['start'] = w['end'] = None
+        elif len(low) > len(words) / 2:
+            flags.append(f"LOW CONFIDENCE ({len(low)}/{len(words)} words <{MIN_SCORE}) "
+                         f"— alignment KEPT, verify text+sync "
+                         f"{cue['start']:.1f}-{cue['end']:.1f}s: {cue['text']}")
         words = interpolate_times(words, cue['start'], cue['end'])
         all_words.extend(words)
 
