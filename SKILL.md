@@ -40,6 +40,12 @@ python3.13 -m venv .venv   # any Python 3.10–3.13; NOT 3.14+
 ```
 
 ffmpeg must be on PATH. Run all scripts with `.venv/bin/python`.
+
+Windows: the venv executables live at `.venv\Scripts\python` and
+`.venv\Scripts\static_ffmpeg` (not `bin/`); install ffmpeg with
+`winget install ffmpeg`; run the burn command from `cmd` or wrap the
+`-vf` argument in double quotes for PowerShell.
+
 Pilot ONE episode end-to-end, get the user's approval on the SRT and
 preview, then batch the rest.
 

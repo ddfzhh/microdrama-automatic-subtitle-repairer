@@ -69,9 +69,9 @@ def main():
     flags_path = argv[argv.index('--flags') + 1] if '--flags' in argv else None
     gap = 2 / fps + 0.001
 
-    data = json.load(open(words_path))
+    data = json.load(open(words_path, encoding='utf-8'))
     words, flags = data['words'], list(data.get('flags', []))
-    plan = json.load(open(plan_path))
+    plan = json.load(open(plan_path, encoding='utf-8'))
 
     errors = validate(plan, words)
     if errors:
@@ -104,7 +104,7 @@ def main():
         for i, c in enumerate(out, 1):
             f.write(f"{i}\n{fmt_ts(c['start'])} --> {fmt_ts(c['end'])}\n{c['text']}\n\n")
     if flags_path:
-        open(flags_path, 'w').write('\n'.join(flags) + '\n')
+        open(flags_path, 'w', encoding='utf-8').write('\n'.join(flags) + '\n')
     print(f"wrote {len(out)} cues -> {out_path}; {len(flags)} flags")
     for fl in flags:
         print(' !', fl)

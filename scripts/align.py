@@ -116,7 +116,7 @@ def main():
         w['i'] = i
         w['word'] = w['word'].strip()
     json.dump({'words': all_words, 'flags': flags},
-              open(out_path, 'w'), indent=1, ensure_ascii=False)
+              open(out_path, 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
     print(f"{len(all_words)} words -> {out_path}; {len(flags)} flags")
     for f in flags:
         print(' !', f)
